@@ -1,0 +1,67 @@
+@font-face {
+    font-family: "terminal";
+    src: url("terminal.ttf");
+}
+
+body {
+    margin: 8px;
+
+    display: flex;
+    width: calc(100vw - 16px);
+    height: calc(100vh - 16px);
+    gap: 8px;
+
+    --bg-0: white;
+    --bg-1: black;
+
+    background-color: var(--bg-1);
+    background-image:
+    linear-gradient(
+          rgba(0, 0, 0, 0.7), 
+          rgba(0, 0, 0, 0.7)
+    ),
+    repeating-linear-gradient(
+        45deg,
+        var(--bg-0) 25%,
+        transparent 25%,
+        transparent 75%,
+        var(--bg-0) 75%,
+        var(--bg-0)
+    ),
+    repeating-linear-gradient(
+        45deg,
+        var(--bg-0) 25%,
+        var(--bg-1) 25%,
+        var(--bg-1) 75%,
+        var(--bg-0) 75%,
+        var(--bg-0)
+    );
+    background-position: 0 0, 10px 10px;
+    background-size: 20px 20px;
+}
+
+window {
+    padding: 4px;
+    display: block;
+    border: 2px solid pink;
+    flex: 1 1 0;
+
+    font-family: "Scheherazade New", serif;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 24px;
+
+    background: white;
+}
+
+window.terminal {
+    font-family: "terminal";
+    font-size: 16px;
+
+    color: white;
+    background: #000000cc;
+}
+
+window.terminal * {
+    display: block;
+}
