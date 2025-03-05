@@ -1,8 +1,3 @@
-let input = `
-(print (cat "hullo there " "meow"))
-
-`.trim();
-
 function assert(maybeTrue, errorMsg) {
     if (!maybeTrue) throw new Error(errorMsg);
 }
@@ -17,29 +12,37 @@ class Node {
 class StringNode extends Node {}
 class SymbolNode extends Node {}
 
-let i = 0;
-function eatParens() {
-    let out = [""]
+class Code {
+    input = "";
+    i = 0;
 
-    while (input[++i] !== ")" && i < input.length) {
-        if (input[i] === "(") {
-            out.push(eatParens());
-            out.push("");
+    constructor(input) {
+        this.input = input;
+    }
+
+    eatParens() {
+        let out = [""]
+
+        while (this.input[++this.i] !== ")" && this.i < this.input.length) {
+            if (this.input[this.i] === "(") {
+                out.push(this.eatParens());
+                out.push("");
+            }
+
+            if (!this.input[this.i]) break;
+            out[out.length - 1] += this.input[this.i];
         }
 
-        if (!input[i]) break;
-        out[out.length - 1] += input[i];
+
+        if (this.input[this.i] === ")") {
+            this.i++;
+        }
+
+        return out.filter(x => typeof x !== "string" || x.trim());
     }
 
-
-    if (input[i] === ")") {
-        i++;
-    }
-
-    return out.filter(x => typeof x !== "string" || x.trim());
 }
 
-let chunks = eatParens(input);
 
 function splitChunk(chunk) {
     let out = [new SymbolNode()];
@@ -95,10 +98,6 @@ function treeString(chunks, indent=0) {
     return out;
 }
 
-chunks = splitChunk(chunks);
-console.log(input);
-console.log(treeString(chunks));
-
 function eval(tree) {
     if (!Array.isArray(tree)) return tree;
 
@@ -109,14 +108,32 @@ function eval(tree) {
 
     switch (head) {
         case "print":
-            console.log(args[0]);
+            output(args[0]);
             return null;
         case "cat":
             return args.map(x => x.content).join("");
         default:
             throw new Error(`Bad ${head}`);
     }
-    console.log(tree);
 }
 
-eval(chunks);
+function output(text) {
+    const el = document.createElement("span");
+    el.innerText = text;
+    document.getElementById("console").appendChild(el);
+}
+
+function run(text) {
+    const code = new Code(text);
+    let chunks = code.eatParens();
+    chunks = splitChunk(chunks);
+    console.log(treeString(chunks));
+    eval(chunks);
+}
+
+const textarea = document.querySelector("textarea");
+run(textarea.value);
+
+document.getElementById("execute").addEventListener("click", function() {
+    run(textarea.value);
+});

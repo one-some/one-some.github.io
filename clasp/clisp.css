@@ -1,0 +1,25 @@
+body {
+    margin: 0px;
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+    flex-direction: column;
+}
+
+textarea {
+    flex-grow: 1;
+}
+
+#bottom {
+    display: flex;
+}
+
+#console {
+    height: 300px;
+    flex-grow: 1;
+    font-family: monospace;
+}
+
+#console > * {
+    display: block;
+}
