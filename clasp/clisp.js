@@ -98,20 +98,32 @@ function treeString(chunks, indent=0) {
     return out;
 }
 
+function content(node) {
+    if (node instanceof Node) return node.content;
+    return node;
+}
+
+function bool(node) {
+    return content(node) === "true";
+}
+
 function eval(tree) {
     if (!Array.isArray(tree)) return tree;
 
     const head = tree.shift().eval().content;
 
     // TODO: NOT ALWAYS IE IF
-    const args = tree.map(eval);
-
     switch (head) {
         case "print":
-            output(args[0]);
+            output(content(eval(tree[0])));
             return null;
         case "cat":
-            return args.map(x => x.content).join("");
+            return tree.map(x => eval(x).content).join("");
+        case "if":
+            const condition = bool(eval(tree[0]));
+            if (!condition) return null;
+
+            return eval(tree[1]);
         default:
             throw new Error(`Bad ${head}`);
     }
