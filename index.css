@@ -5,10 +5,15 @@ body {
     margin: 0px;
     font-family: monospace;
 }
+ 
+img {
+    image-rendering: pixelated;
+}
 
 desktop {
     flex-grow: 1;
     background-color: pink;
+    background: url("static/nightskystar.gif");
 }
 
 taskbar {
@@ -61,5 +66,8 @@ win-title {
 
 win-body {
     flex-grow: 1;
-    background-color: white;
+    background-color: #181818;
+    color: white;
+
+    overflow-y: auto;
 }
