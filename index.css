@@ -78,3 +78,7 @@ win-body {
 
     overflow-y: auto;
 }
+
+win-body::-webkit-scrollbar {
+    display: none;
+}
