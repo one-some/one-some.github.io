@@ -6,6 +6,8 @@ canvas.height = 180;
 
 canvas.style.backgroundColor = "#181818";
 
+const setTTL = 2;
+
 const sizeX = 10;
 const sizeY = 18;
 
@@ -113,15 +115,24 @@ function renderTiles() {
 }
 
 
+let gameTTL = setTTL;
 function gameStep() {
     tiles = structuredClone(preTiles);
     drawTetromino(currentPiece.id, currentPiece.x, currentPiece.y);
 
-    if (checkCollision(currentPiece.id, currentPiece.x, currentPiece.y + 1)) {
+    if (gameTTL <= 0) {
+        gameTTL = setTTL;
         currentPiece.id = Math.floor(Math.random() * tetromino.length);
         currentPiece.x = Math.floor(Math.random() * 8);
         currentPiece.y = 0;
         preTiles = structuredClone(tiles);
+        renderTiles();
+        return;
+    }
+
+    if (checkCollision(currentPiece.id, currentPiece.x, currentPiece.y + 1)) {
+        if (currentPiece.y < 0) alert("DONE");
+        gameTTL -= 1;
         renderTiles();
         return;
     }
@@ -152,6 +163,8 @@ function handleKey(key) {
             break;
     }
 
+    gameTTL = setTTL;
+
     if (!checkCollision(
         currentPiece.id,
         currentPiece.x + positionDelta[0],
@@ -160,8 +173,6 @@ function handleKey(key) {
         currentPiece.x += positionDelta[0];
         currentPiece.y += positionDelta[1];
     }
-
-    console.log("Move", positionDelta);
 }
 
 const keyIntervals = {};
