@@ -63,9 +63,6 @@ function renderBrick(x, y, brick) {
     x += 10;
     y += 25;
 
-    x += 10;
-    y += 20;
-
     ctx.fillStyle = colors[brick] ?? "black";
     ctx.fillRect(x, y, 8, 8);
 
@@ -96,8 +93,15 @@ function checkCollision(id, x, y) {
     for (let py = 0; py < tet.length; py++) {
         for (let px = 0; px < tet[py].length; px++) {
             if (tet[py][px] === " ") continue;
-            if (tiles[x + px][y + py]) return true;
-            if (tiles[x + px][y + py] === undefined) return true;
+            if (preTiles[x + px][y + py]) {
+                console.log("Collide on collision");
+                console.log(x + px, y + py);
+                return true;
+            }
+            if (preTiles[x + px][y + py] === undefined) {
+                console.log("Collide on undef");
+                return true;
+            }
         }
     }
     return false;
@@ -113,18 +117,21 @@ function renderTiles() {
     }
 }
 
+
 function gameStep() {
     tiles = structuredClone(preTiles);
     drawTetromino(currentPiece.id, currentPiece.x, currentPiece.y);
 
     if (checkCollision(currentPiece.id, currentPiece.x, currentPiece.y + 1)) {
-        console.log("collided")
-        currentPiece.id = 0;
-        currentPiece.x = 0;
+        console.log("COLLIDED");
+        currentPiece.id = Math.floor(Math.random() * tetromino.length);
+        currentPiece.x = Math.floor(Math.random() * 8);
         currentPiece.y = 0;
         preTiles = structuredClone(tiles);
+        renderTiles();
         return;
     }
+
 
     currentPiece.y++;
     renderTiles();
@@ -132,4 +139,8 @@ function gameStep() {
 
 renderTiles();
 
-setInterval(gameStep, 100);
+let interval = setInterval(gameStep, 100);
+
+function stop() {
+    clearInterval(interval);
+}
