@@ -10,10 +10,10 @@
 
     <body>
         <windows>
-            <window>
-                <win-title style="left: 600px;">Tetris</win-title>
-                <win-body>
-                    <iframe src="tetris/tetris.html"></iframe>
+            <window style="left: 525px;width: 200px;">
+                <win-title>Tetris</win-title>
+                <win-body style="height: auto; display: flex; justify-content: center;">
+                    <canvas tabindex="0" id="tetris"></canvas>
                 </win-body>
             </window>
 
@@ -118,6 +118,6 @@
         </taskbar>
 
         <script src="main.js"></script>
-        <script src="code-viewer.js"></script>
+        <script src="tetris.js"></script>
     </body>
 </html>

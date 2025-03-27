@@ -88,20 +88,15 @@ function drawTetromino(id, x, y) {
 
 function checkCollision(id, x, y) {
     if (y > sizeY) return true;
+    if (x < 0) return true;
     const tet = tetromino[id];
 
     for (let py = 0; py < tet.length; py++) {
         for (let px = 0; px < tet[py].length; px++) {
             if (tet[py][px] === " ") continue;
-            if (preTiles[x + px][y + py]) {
-                console.log("Collide on collision");
-                console.log(x + px, y + py);
-                return true;
-            }
-            if (preTiles[x + px][y + py] === undefined) {
-                console.log("Collide on undef");
-                return true;
-            }
+            if (preTiles[x + px] === undefined) return true;
+            if (preTiles[x + px][y + py] === undefined) return true;
+            if (preTiles[x + px][y + py]) return true;
         }
     }
     return false;
@@ -123,7 +118,6 @@ function gameStep() {
     drawTetromino(currentPiece.id, currentPiece.x, currentPiece.y);
 
     if (checkCollision(currentPiece.id, currentPiece.x, currentPiece.y + 1)) {
-        console.log("COLLIDED");
         currentPiece.id = Math.floor(Math.random() * tetromino.length);
         currentPiece.x = Math.floor(Math.random() * 8);
         currentPiece.y = 0;
@@ -131,7 +125,6 @@ function gameStep() {
         renderTiles();
         return;
     }
-
 
     currentPiece.y++;
     renderTiles();
@@ -144,3 +137,49 @@ let interval = setInterval(gameStep, 100);
 function stop() {
     clearInterval(interval);
 }
+
+function handleKey(key) {
+    let positionDelta = [0, 0];
+
+    switch (key) {
+        case "a":
+        case "arrowleft":
+            positionDelta[0] -= 1;
+            break;
+        case "d":
+        case "arrowright":
+            positionDelta[0] += 1;
+            break;
+    }
+
+    if (!checkCollision(
+        currentPiece.id,
+        currentPiece.x + positionDelta[0],
+        currentPiece.y + positionDelta[1]
+    )) {
+        currentPiece.x += positionDelta[0];
+        currentPiece.y += positionDelta[1];
+    }
+
+    console.log("Move", positionDelta);
+}
+
+const keyIntervals = {};
+
+canvas.addEventListener("keydown", function(event) {
+    // NOTE: Canvas itself cannot have focus:
+    // https://stackoverflow.com/questions/12886286/addeventlistener-for-keydown-on-canvas#comment17449305_12886286
+
+    const key = event.key.toLowerCase();
+    handleKey(key);
+
+    keyIntervals[key] = setInterval(() => handleKey(key), 200);
+});
+
+window.addEventListener("keyup", function(event) {
+    const key = event.key.toLowerCase();
+    const interval = keyIntervals[key];
+    delete keyIntervals[key];
+    if (interval === undefined) return;
+    clearInterval(interval);
+});
