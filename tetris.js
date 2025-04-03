@@ -50,12 +50,12 @@ const tetromino = [
     ]
 ]
 
-let tiles = Array.from(Array(sizeX), () => new Array(sizeY).fill(0));
-let preTiles = structuredClone(tiles, { deep: true })
+let tiles = Array.from(Array(sizeY), () => new Array(sizeX).fill(0));
 const currentPiece = {
     id: 0,
     x: 0,
     y: 0,
+    rotation: 0,
 };
 
 function renderBrick(x, y, brick) {
@@ -77,60 +77,105 @@ function renderBrick(x, y, brick) {
     ctx.fillRect(x, y, 8, 1);
 }
 
-function drawTetromino(id, x, y) {
-    const tet = tetromino[id];
+function rotatedTetromino(id, rotation) {
+    let tet = structuredClone(tetromino[id], { deep: true });
+
+    for (let i = 0; i < rotation % 4; i++) {
+        let dims = [
+            tet[0].length,
+            tet.length,
+        ];
+
+        // Rotate dimensions of array
+        if (i % 2 == 0) dims.push(dims.shift);
+
+        let newTet = Array.from(Array(dims[0]), () => new Array(dims[1]).fill(" "));
+
+        for (let y = 0; y < tet.length; y++) {
+            for (let x = 0; x < tet[y].length; x++) {
+                newTet[x][y] = tet[y][x];
+            }
+        }
+
+        tet = newTet;
+    }
+
+    return tet;
+}
+
+function drawTetromino(id, x, y, rotation=0, fieldWrite=false) {
+    const tet = rotatedTetromino(id, rotation);
 
     for (let py = 0; py < tet.length; py++) {
         for (let px = 0; px < tet[py].length; px++) {
             if (tet[py][px] === " ") continue;
-            tiles[x + px][y + py] = id + 1;
+
+            if (fieldWrite) {
+                tiles[y + py][x + px] = id + 1;
+            } else {
+                renderBrick(x + px, y + py, id + 1);
+            }
         }
     }
 }
 
-function checkCollision(id, x, y) {
+function checkCollision(id, x, y, rotation) {
     if (y > sizeY) return true;
     if (x < 0) return true;
-    const tet = tetromino[id];
+    const tet = rotatedTetromino(id, rotation);
 
     for (let py = 0; py < tet.length; py++) {
         for (let px = 0; px < tet[py].length; px++) {
             if (tet[py][px] === " ") continue;
-            if (preTiles[x + px] === undefined) return true;
-            if (preTiles[x + px][y + py] === undefined) return true;
-            if (preTiles[x + px][y + py]) return true;
+            if (tiles[y + py] === undefined) return true;
+            if (tiles[y + py][x + px] === undefined) return true;
+            if (tiles[y + py][x + px]) return true;
         }
     }
     return false;
 }
 
-tiles[1][2] = 3;
-
 function renderTiles() {
     for (let x = 0; x < sizeX; x++) {
         for (let y = 0; y < sizeY; y++) {
-            renderBrick(x, y, tiles[x][y]);
+            renderBrick(x, y, tiles[y][x]);
         }
     }
+
+    drawTetromino(currentPiece.id, currentPiece.x, currentPiece.y, currentPiece.rotation, false);
 }
 
 
+function checkLines() {
+    for (let i = tiles.length - 1; i >= 0; i--) {
+        if (tiles[i].length !== tiles[i].filter(x => !!x).length) continue;
+        console.log("WHAT");
+
+        for (let y = i; y >= 1; y--) {
+            tiles[y] = tiles[y - 1];
+        }
+        tiles[0] = tiles[0].map(x => 0);
+    }
+}
+
 let gameTTL = setTTL;
 function gameStep() {
-    tiles = structuredClone(preTiles);
-    drawTetromino(currentPiece.id, currentPiece.x, currentPiece.y);
-
     if (gameTTL <= 0) {
         gameTTL = setTTL;
+
+        drawTetromino(currentPiece.id, currentPiece.x, currentPiece.y, currentPiece.rotation, true);
+
         currentPiece.id = Math.floor(Math.random() * tetromino.length);
-        currentPiece.x = Math.floor(Math.random() * 8);
+        currentPiece.x = 1;
         currentPiece.y = 0;
-        preTiles = structuredClone(tiles);
+        currentPiece.rotation = 0;
+
+        checkLines();
         renderTiles();
         return;
     }
 
-    if (checkCollision(currentPiece.id, currentPiece.x, currentPiece.y + 1)) {
+    if (checkCollision(currentPiece.id, currentPiece.x, currentPiece.y + 1, currentPiece.rotation)) {
         if (currentPiece.y < 0) alert("DONE");
         gameTTL -= 1;
         renderTiles();
@@ -143,7 +188,7 @@ function gameStep() {
 
 renderTiles();
 
-let interval = setInterval(gameStep, 100);
+let interval = setInterval(gameStep, 200);
 
 function stop() {
     clearInterval(interval);
@@ -161,6 +206,10 @@ function handleKey(key) {
         case "arrowright":
             positionDelta[0] += 1;
             break;
+        case "w":
+        case "arrowup":
+            currentPiece.rotation += 1;
+            break;
     }
 
     gameTTL = setTTL;
@@ -168,11 +217,14 @@ function handleKey(key) {
     if (!checkCollision(
         currentPiece.id,
         currentPiece.x + positionDelta[0],
-        currentPiece.y + positionDelta[1]
+        currentPiece.y + positionDelta[1],
+        currentPiece.rotation
     )) {
         currentPiece.x += positionDelta[0];
         currentPiece.y += positionDelta[1];
     }
+
+    renderTiles();
 }
 
 const keyIntervals = {};
